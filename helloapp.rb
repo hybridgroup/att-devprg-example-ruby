@@ -34,7 +34,7 @@ end
 get '/auth/callback' do
   begin
     access_token = client.auth_code.get_token(params[:code], :redirect_uri => redirect_uri)
-    if ENV['JSON'] = "1"
+    if ENV['JSON'] == "1"
       data = JSON.parse(access_token.get(api_url).body)
     else
       data = access_token.get(api_url).body
