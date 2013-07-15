@@ -6,11 +6,19 @@ require 'json'
 OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE
 
 def client
-  OAuth2::Client.new((ENV['ATT_CLIENT_ID']||'testing'),
-                     (ENV['ATT_CLIENT_SECRET']||'testing'),
-                     :site => ENV['ATT_AUTH_SERVER'],
-                     :authorize_url => "#{ENV['ATT_AUTH_SERVER']}/oauth/authorize",
-                     :token_url => "#{ENV['ATT_AUTH_SERVER']}/oauth/token")
+  OAuth2::Client.new((ENV['CLIENT_ID']||'testing'),
+                     (ENV['CLIENT_SECRET']||'testing'),
+                     :site => ENV['AUTH_SERVER'],
+                     :authorize_url => "#{ENV['AUTH_SERVER']}/oauth/authorize",
+                     :token_url => "#{ENV['AUTH_SERVER']}/oauth/token")
+end
+
+def api_url
+  ENV['API_SERVER'] || "#{ENV['AUTH_SERVER']}/me.json"
+end
+
+def scope
+  ENV['SCOPE'] || "profile"
 end
 
 get "/" do
@@ -18,7 +26,7 @@ get "/" do
 end
 
 get '/auth' do
-  authorization_url = client.auth_code.authorize_url(:redirect_uri => redirect_uri, :response_type => "code", :scope => "profile")
+  authorization_url = client.auth_code.authorize_url(:redirect_uri => redirect_uri, :response_type => "code", :scope => scope)
   puts "Redirecting to URL: #{authorization_url.inspect}"
   redirect authorization_url
 end
@@ -26,11 +34,15 @@ end
 get '/auth/callback' do
   begin
     access_token = client.auth_code.get_token(params[:code], :redirect_uri => redirect_uri)
-    api_url = "/me.json"
-    me = JSON.parse(access_token.get(api_url).body)
-    erb "<p>Your data:\n#{me.inspect}</p>"
+    if ENV['JSON'] = "1"
+      data = JSON.parse(access_token.get(api_url).body)
+    else
+      data = access_token.get(api_url).body
+    end
+
+    erb "<p>Your data:\n#{data.inspect}</p>"
   rescue OAuth2::Error => e
-    erb %(<p>Wassup #{$!}</p><p><a href="/auth">Retry</a></p>)
+    erb %(<p>#{$!}</p><p><a href="/auth">Retry</a></p>)
   end
 end
 
@@ -48,7 +60,7 @@ end
 __END__
 @@ index
 <form action="/auth">
-  <input type="submit" value="Profile" />
+  <input type="submit" value="Test" />
 <form>
 
 @@ layout

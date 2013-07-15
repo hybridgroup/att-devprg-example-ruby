@@ -28,4 +28,4 @@ The Profile API allows you to return the user profile data for the current user.
 ## How To Run The Sample Code
 
     bundle install
-    ATT_CLIENT_ID=<your client ID here> ATT_CLIENT_SECRET=<your secret here> ATT_AUTH_SERVER=<auth server> ruby helloapp.rb
+    CLIENT_ID=<your client ID here> CLIENT_SECRET=<your secret here> AUTH_SERVER=<auth server> API_SERVER=<api server> SCOPE=<desired scope> ruby helloapp.rb
